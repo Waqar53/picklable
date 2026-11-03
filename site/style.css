@@ -109,6 +109,8 @@ section { padding: 56px 0; scroll-margin-top: 60px; }
 .thumb img { width: 56px; height: 42px; object-fit: cover; border-radius: 6px; flex: none; }
 .thumb span { font-size: .82rem; line-height: 1.25; }
 .thumb small { display: block; color: var(--ink-3); font-size: .74rem; }
+.thumbs .group { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin: 6px 0 0; }
+.thumbs .group:first-child { margin-top: 0; }
 .thumb[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
 .file { display: block; font-size: .85rem; color: var(--ink-2); margin-bottom: 8px; }
 .file input { display: block; width: 100%; margin-top: 4px; font-size: .8rem; color: var(--ink-2); }
@@ -159,6 +161,10 @@ figure { margin: 0; }
 .figs figure, figure.wide { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; box-shadow: var(--shadow); }
 .figs figcaption, figure.wide figcaption { color: var(--ink-3); font-size: .84rem; padding: 6px 4px 0; }
 figure.wide { margin-top: 14px; max-width: 760px; }
+figure.strip { max-width: 100%; margin: 14px 0 28px; }
+.realcard { margin-bottom: 4px; }
+.realcard td:first-child { color: var(--ink-2); width: 46%; }
+h3.sub { font-size: 1.05rem; margin: 8px 0 12px; }
 .tables { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
 table { width: 100%; border-collapse: collapse; font-size: .9rem; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
@@ -189,6 +195,7 @@ tr.hl td { font-weight: 700; }
   section { padding: 40px 0; }
   .thumbs { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; }
   .thumb { flex: 0 0 168px; scroll-snap-align: start; }
+  .thumbs .group { flex: 0 0 64px; align-self: center; margin: 0; }
   .top nav a:not(.btn) { display: none; }
   .panels, .cols, .figs, .tables, .steps { grid-template-columns: 1fr; }
   .kpi b { font-size: 1.4rem; }

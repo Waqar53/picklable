@@ -86,7 +86,8 @@ def ws2_to_coco(root: Path, out_json: Path, min_area: int = 64) -> Path:
                    None)
         if img is None:
             continue
-        m = cv2.imread(str(mpath), cv2.IMREAD_GRAYSCALE) > 127
+        raw = cv2.imread(str(mpath), cv2.IMREAD_GRAYSCALE)
+        m = raw > (127 if raw.max() > 1 else 0)  # masks may be stored 0/255 or 0/1
         image_id = coco.add_image(str(img.relative_to(out_json.parent)), m.shape[0], m.shape[1])
         k, labels = cv2.connectedComponents(m.astype(np.uint8), connectivity=8)
         for i in range(1, k):

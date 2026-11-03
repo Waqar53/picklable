@@ -1,8 +1,30 @@
 # PickLabel: results (one page)
 
 All numbers come from code in this repo and from data that can be regenerated (`scripts/`).
-The synthetic sections are a correctness and ablation test bench, not evidence about real waste.
-The real-data section is empty because there is no real data yet.
+Section 0 uses real recycling-plant images with a simulated removal. The synthetic sections are a
+correctness and ablation test bench with exact ground truth. The last table needs real robot
+pick logs.
+
+## 0. Real recycling-plant frames (WS2, removal simulated)
+
+120 picks on 120 real frames from 14 conveyor videos of a plastic-sorting plant
+([WS2](https://zenodo.org/records/14793518), CC BY 4.0), scored against the dataset's hand-made
+masks. One annotated item per frame is removed by inpainting; 20 picks also nudge touching
+neighbours; the after frame is re-captured with shake, exposure / white-balance drift, noise and
+JPEG; 21 picks are missed grasps with nothing removed (`scripts/ws2_removal_benchmark.py`,
+`scripts/ws2_report.py`, outputs in `report/ws2/`).
+
+| Mask source | mean IoU | IoU >= 0.75 | IoU >= 0.5 | missed grasps caught | auto-accepted | sent to review | score vs IoU (Spearman) | time / pick |
+|---|---|---|---|---|---|---|---|---|
+| change map + GrabCut | 0.889 | 91% | 98% | 21/21 | 88/99 at IoU 0.915 | 11 at IoU 0.67 | 0.74 | 0.8 s |
+| SAM 2.1-tiny at the grasp | 0.917 | 91% | 98% | 21/21 | 90/99 at IoU 0.944 | 9 at IoU 0.65 | 0.70 | 3.8 s |
+
+* Cutoffs fitted so 95% of auto-accepted labels reach IoU >= 0.75: 88 of 99 change-map labels go
+  straight into the dataset at mean IoU 0.915 (SAM 2.1: 90 at 0.944); those sent to review average IoU 0.65-0.67.
+* Failure modes: clear film (removal changes its edges more than its inside, so the change-only mask
+  can come out as a ring; SAM 2.1 fixes it, IoU 0.33 -> 0.93) and very small dark items. Both score low.
+
+![Real picks: three accepted, a missed grasp caught, the worst case refused](ws2/examples_change.jpg)
 
 ## 1. The auto-labeler finds the picked item
 

@@ -17,7 +17,7 @@ from picklabel.roboflow_sync.upload import RoboflowSync, UploadItem, make_tags
 from picklabel.types import PickPair
 from picklabel.viz import ROUTE_BGR, draw_point, heatmap, overlay
 
-MAX_SIDE = 1280  # uploads from a phone are downscaled to keep the browser responsive
+MAX_SIDE = 640  # frames are downscaled for the browser: ~2-5 s per pick in WebAssembly instead of ~30 s at 1000 px
 LABELER = AutoLabeler()  # same defaults as configs/autolabel.yaml
 SYNC = RoboflowSync(dry_run=True, ledger_path="/tmp/picklabel_demo_ledger.jsonl")
 _cache: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray | None]] = {}
@@ -46,7 +46,11 @@ def load(key: str, before, after, gt=None) -> str:
         b = cv2.resize(b, None, fx=s, fy=s, interpolation=cv2.INTER_AREA)
     if a.shape != b.shape:
         a = cv2.resize(a, (b.shape[1], b.shape[0]), interpolation=cv2.INTER_AREA)
-    g = _decode(gt, cv2.IMREAD_GRAYSCALE) > 127 if gt is not None else None
+    g = None
+    if gt is not None:
+        g = _decode(gt, cv2.IMREAD_GRAYSCALE) > 127
+        if g.shape != b.shape[:2]:
+            g = cv2.resize(g.astype(np.uint8), (b.shape[1], b.shape[0]), interpolation=cv2.INTER_NEAREST) > 0
     _cache[key] = (b, a, g)
     return json.dumps({"width": int(b.shape[1]), "height": int(b.shape[0]), "scale": s})
 

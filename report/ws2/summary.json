@@ -1,0 +1,74 @@
+{
+  "change": {
+    "n_picks": 120,
+    "n_removed": 99,
+    "n_missed": 21,
+    "mean_iou": 0.8886,
+    "iou>=0.75": 0.9091,
+    "iou>=0.5": 0.9798,
+    "missed_caught": "21/21",
+    "routes": {
+      "accept": 97,
+      "review": 1,
+      "hard": 22
+    },
+    "ms_per_pick_median": 803.5,
+    "accept_mean_iou": 0.8972,
+    "review_mean_iou": 0.8055,
+    "hard_mean_iou": 0.1427,
+    "spearman_score_iou": 0.7363,
+    "calibrated": {
+      "target": "95% of accepted labels at IoU >= 0.75",
+      "accept_cutoff": 0.78,
+      "review_cutoff": 0.399,
+      "accepted_n": 88,
+      "accepted_mean_iou": 0.9154,
+      "accepted_iou>=0.75": 0.9545,
+      "review_n": 11,
+      "review_mean_iou": 0.6746
+    },
+    "example_strip": [
+      "ws2-before-video-008-frame_0062__077.jpg route=accept iou=0.9889",
+      "ws2-before-video-009-frame_0010__000.jpg route=accept iou=0.9887",
+      "ws2-before-video-011-frame_0004__061.jpg route=accept iou=0.9862",
+      "ws2-before-video-000-frame_0028__067.jpg route=hard iou=0.0",
+      "ws2-before-video-002-frame_0033__019.jpg route=hard iou=0.1427"
+    ]
+  },
+  "sam2": {
+    "n_picks": 120,
+    "n_removed": 99,
+    "n_missed": 21,
+    "mean_iou": 0.9171,
+    "iou>=0.75": 0.9091,
+    "iou>=0.5": 0.9798,
+    "missed_caught": "21/21",
+    "routes": {
+      "accept": 95,
+      "review": 3,
+      "hard": 22
+    },
+    "ms_per_pick_median": 3771.4,
+    "accept_mean_iou": 0.9333,
+    "review_mean_iou": 0.6644,
+    "hard_mean_iou": 0.14,
+    "spearman_score_iou": 0.6961,
+    "calibrated": {
+      "target": "95% of accepted labels at IoU >= 0.75",
+      "accept_cutoff": 0.794,
+      "review_cutoff": 0.399,
+      "accepted_n": 90,
+      "accepted_mean_iou": 0.9439,
+      "accepted_iou>=0.75": 0.9556,
+      "review_n": 9,
+      "review_mean_iou": 0.6489
+    },
+    "example_strip": [
+      "ws2-before-video-005-frame_0040__071.jpg route=accept iou=0.9908",
+      "ws2-before-video-000-frame_0040__069.jpg route=accept iou=0.9904",
+      "ws2-before-video-006-frame_0033__015.jpg route=accept iou=0.9892",
+      "ws2-before-video-000-frame_0028__067.jpg route=hard iou=0.0",
+      "ws2-before-video-002-frame_0033__019.jpg route=hard iou=0.14"
+    ]
+  }
+}

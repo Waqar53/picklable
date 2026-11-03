@@ -1,0 +1,18 @@
+{
+  "pick_id": "000",
+  "session": "conveyor-3",
+  "grasp_px": [
+    834.8,
+    324.07
+  ],
+  "class_name": "plastic",
+  "grasp_success": null,
+  "belt_shift_px": null,
+  "timestamp": 0.0,
+  "synthetic": false,
+  "source": "WS2 test set (real), simulated removal",
+  "frame": "frame_0010.jpg",
+  "missed": false,
+  "nudged_neighbours": 3,
+  "item_area_frac": 0.02905
+}

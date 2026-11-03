@@ -11,9 +11,9 @@ test:
 lint:
 	ruff check .
 
-# auto-label the bundled example picks (CPU, ~5 s)
+# auto-label the bundled example picks: real conveyor frames + synthetic tray (CPU, ~10 s)
 demo:
-	picklabel autolabel examples/synthetic --out runs/autolabel/examples
+	picklabel autolabel examples --out runs/autolabel/examples
 
 app:
 	streamlit run app/streamlit_app.py

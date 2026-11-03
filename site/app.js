@@ -163,7 +163,15 @@ window.addEventListener("resize", placeMarker);
 (async () => {
   state.examples = await (await fetch("examples/examples.json")).json();
   const thumbs = $("#thumbs");
+  let group = null;
   for (const ex of state.examples) {
+    if (ex.group && ex.group !== group) {
+      group = ex.group;
+      const h = document.createElement("h4");
+      h.className = "group";
+      h.textContent = group;
+      thumbs.appendChild(h);
+    }
     const b = document.createElement("button");
     b.className = "thumb";
     b.dataset.key = ex.key;

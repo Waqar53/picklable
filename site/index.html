@@ -33,13 +33,14 @@
     instance mask. It routes the mask into Roboflow as ground truth, review or a hard example, then trains a fast
     YOLO-seg student that drops into ROS 2 in place of <code>sam3_ros</code>.</p>
   <div class="kpis">
-    <div class="kpi"><b>0</b><span>human-labelled instances for the same recall @ P≥0.90 as a student trained on 352 (0.877 vs 0.863)</span></div>
-    <div class="kpi"><b>0.94</b><span>mean IoU of auto-labels vs exact masks, 131 picks</span></div>
-    <div class="kpi"><b>4 / 4</b><span>missed grasps caught and routed as hard examples</span></div>
-    <div class="kpi"><b>0.61→0.93</b><span>mean IoU gained from white-balance gains + shift tolerance</span></div>
+    <div class="kpi"><b>0.89</b><span>mean IoU of auto-labels on real recycling-plant frames, vs hand-made masks (120 picks)</span></div>
+    <div class="kpi"><b>89%</b><span>of real-frame labels go straight into the dataset, at mean IoU 0.92; the rest go to a human</span></div>
+    <div class="kpi"><b>21 / 21</b><span>missed grasps on real frames caught and routed as hard examples</span></div>
+    <div class="kpi"><b>0 vs 352</b><span>human-labelled instances for the same student recall @ P≥0.90 (0.877 vs 0.863, synthetic)</span></div>
   </div>
-  <p class="fine">Measured on synthetic trays with exact ground truth: a correctness test bench, not a claim about real
-    waste. Real-data numbers are next (<a href="https://github.com/Waqar53/picklable/blob/main/report/results.md">report</a>).</p>
+  <p class="fine">Real frames: WS2 plastic-sorting plant (CC BY 4.0), removal simulated by inpainting + re-capture; masks are
+    the dataset's hand-made ones. Student comparison: synthetic trays with exact ground truth
+    (<a href="https://github.com/Waqar53/picklable/blob/main/report/results.md">report</a>).</p>
 </section>
 
 <section id="demo" class="band">
@@ -53,12 +54,13 @@
 
     <div class="demo">
       <aside class="picker" aria-label="Examples">
-        <h3>Example picks</h3>
+        <h3>Examples</h3>
         <div id="thumbs" class="thumbs"></div>
         <h3>Your own pair</h3>
         <label class="file">Before frame<input id="up-before" type="file" accept="image/*"></label>
         <label class="file">After frame<input id="up-after" type="file" accept="image/*"></label>
         <p class="fine">Same camera, one item removed between the two shots. Nothing is uploaded: it all stays in your browser.</p>
+        <p class="fine">Real frames: <a href="https://zenodo.org/records/14793518">WS2</a> (Marelli et al., ICCV 2025 Workshops), CC BY 4.0; item removal simulated.</p>
       </aside>
 
       <div class="stage">
@@ -112,10 +114,27 @@
 
 <section id="results" class="wrap">
   <div class="section-head">
-    <h2>Results so far</h2>
-    <p>All measured with the code in the repo on synthetic trays with exact masks. They show correctness and what each
-      design choice is worth. Real-data rows stay empty until the home-rig gold set exists.</p>
+    <h2>How accurate is it?</h2>
+    <p>Measured with the code in the repo. Real recycling-plant frames first, then synthetic trays where the ground truth is exact.</p>
   </div>
+  <div class="card realcard">
+    <h3>Real frames from a plastic-sorting plant (WS2): 120 picks, 14 conveyor videos</h3>
+    <table>
+      <tbody>
+        <tr><td>Mask accuracy vs hand-made masks</td><td><b>mean IoU 0.889</b>; 91% at IoU ≥ 0.75, 98% at ≥ 0.5</td></tr>
+        <tr><td>Missed grasps caught</td><td><b>21 / 21</b>, routed as hard examples</td></tr>
+        <tr><td>Straight into the dataset (cutoffs for 95% clean labels)</td><td><b>88 / 99</b> at mean IoU 0.915</td></tr>
+        <tr><td>Sent to a human</td><td>11, mean IoU 0.67: the weak ones</td></tr>
+        <tr><td>Speed</td><td>0.8 s per pick on a laptop CPU</td></tr>
+        <tr><td>With SAM 2.1 at the grasp (laptop GPU, 3.8 s)</td><td><b>mean IoU 0.917</b>; 90 / 99 auto-accepted at 0.944; clear film fixed</td></tr>
+      </tbody>
+    </table>
+    <p class="fine">Frames, clutter, translucent PET and masks are real; WS2's before/after photos come from two cameras, so the
+      removal is simulated (inpainting, nudged neighbours, re-capture with shake, lighting drift, noise, JPEG).
+      Fails on clear film (edges only) and tiny dark items, which score low and go to review or hard.</p>
+  </div>
+  <figure class="wide strip"><img src="assets/ws2_examples.jpg" alt="Five real picks: three accepted, a missed grasp caught, the worst case refused" loading="lazy"><figcaption>Real frames: three accepted picks, a missed grasp caught, and the worst case refused rather than guessed</figcaption></figure>
+  <h3 class="sub">Synthetic trays: training a student on the labels</h3>
   <div class="callout">
     <b>Headline:</b> a student trained on PickLabel labels with <b>zero</b> human-labelled instances matched a student
     trained on 352 ground-truth masks at recall @ precision 0.90 (<b>0.877</b> vs <b>0.863</b>; the gap is one item

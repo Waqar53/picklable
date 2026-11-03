@@ -34,17 +34,20 @@ ASSETS = {
     "report/autolabel/sam2_tiny/calibration.png": "calibration.png",
     "docs/img/pick_accept.jpg": "pick_accept.jpg",
     "docs/img/picklabel.gif": "picklabel.gif",
+    "report/ws2/examples_change.jpg": "ws2_examples.jpg",
 }
 
 
 def describe(meta: dict) -> str:
     if meta.get("missed"):
         return "gripper missed: nothing removed"
+    if meta.get("synthetic") is False:
+        return "neighbours nudged" if meta.get("nudged_neighbours") else "real plant frame"
     kind = "clear film" if meta.get("film") else ("dark plastic" if meta.get("dark") else "plastic")
     return kind + (", gripper confirmed" if meta.get("grasp_success") else "")
 
 
-def build(out: Path, examples: Path) -> None:
+def build(out: Path, groups: list[tuple[Path, str]]) -> None:
     import demo_bridge
 
     if out.exists():
@@ -64,25 +67,29 @@ def build(out: Path, examples: Path) -> None:
     (out / "py" / "manifest.json").write_text(json.dumps([*PY_FILES, "demo_bridge.py"]))
 
     entries = []
-    for n, d in enumerate(find_pick_dirs(examples), start=1):
-        meta = read_json(d / "pick.json")
-        key = f"{d.parent.name}-{d.name}"
-        dst = out / "examples" / key
-        dst.mkdir(parents=True)
-        for name in ("before.jpg", "after.jpg", "gt_mask.png"):
-            shutil.copy2(d / name, dst / name)
-        demo_bridge.load(key, (d / "before.jpg").read_bytes(), (d / "after.jpg").read_bytes(),
-                         (d / "gt_mask.png").read_bytes())
-        result = demo_bridge.run(key, *meta["grasp_px"], meta.get("grasp_success"))
-        (dst / "result.json").write_text(result)
-        r = json.loads(result)
-        print(f"{key}: {r['route']} q={r['score']} iou={r['iou']}")
-        entries.append({
-            "key": key, "label": f"Pick {n}" + (" · missed" if meta.get("missed") else ""), "note": describe(meta),
-            "before": f"examples/{key}/before.jpg", "after": f"examples/{key}/after.jpg",
-            "gt": f"examples/{key}/gt_mask.png", "result": f"examples/{key}/result.json",
-            "grasp": meta["grasp_px"], "grasp_success": meta.get("grasp_success"),
-        })
+    for examples, group in groups:
+        word = "Item" if "real" in group.lower() else "Pick"
+        for n, d in enumerate(find_pick_dirs(examples), start=1):
+            meta = read_json(d / "pick.json")
+            key = f"{d.parent.name}-{d.name}"
+            dst = out / "examples" / key
+            dst.mkdir(parents=True)
+            for name in ("before.jpg", "after.jpg", "gt_mask.png"):
+                shutil.copy2(d / name, dst / name)
+            info = json.loads(demo_bridge.load(key, (d / "before.jpg").read_bytes(), (d / "after.jpg").read_bytes(),
+                                               (d / "gt_mask.png").read_bytes()))
+            gx, gy = (v * info["scale"] for v in meta["grasp_px"])  # the bridge may downscale the frame
+            result = demo_bridge.run(key, gx, gy, meta.get("grasp_success"))
+            (dst / "result.json").write_text(result)
+            r = json.loads(result)
+            print(f"{key}: {r['route']} q={r['score']} iou={r['iou']}")
+            entries.append({
+                "key": key, "group": group, "note": describe(meta),
+                "label": f"{word} {n}" + (" · missed" if meta.get("missed") else ""),
+                "before": f"examples/{key}/before.jpg", "after": f"examples/{key}/after.jpg",
+                "gt": f"examples/{key}/gt_mask.png", "result": f"examples/{key}/result.json",
+                "grasp": meta["grasp_px"], "grasp_success": meta.get("grasp_success"),
+            })
     (out / "examples" / "examples.json").write_text(json.dumps(entries, indent=1))
 
     (out / "assets").mkdir()
@@ -94,9 +101,16 @@ def build(out: Path, examples: Path) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="build/site")
-    ap.add_argument("--examples", default=str(ROOT / "examples" / "synthetic"))
+    ap.add_argument("--examples", nargs="+", default=[f"{ROOT / 'examples' / 'ws2'}:Real conveyor (WS2)",
+                                                       f"{ROOT / 'examples' / 'synthetic'}:Synthetic tray"],
+                    help="FOLDER:Group name, in display order (missing folders are skipped)")
     args = ap.parse_args()
-    build(Path(args.out), Path(args.examples))
+    groups = []
+    for spec in args.examples:
+        folder, _, name = spec.rpartition(":") if ":" in spec else (spec, "", "Examples")
+        if Path(folder).exists():
+            groups.append((Path(folder), name))
+    build(Path(args.out), groups)
     print(f"site -> {args.out}")
 
 
