@@ -13,8 +13,6 @@ authors = [{ name = "Mohd Waqar Azim" }]
 dependencies = [
     "numpy>=1.26",
     "opencv-python>=4.9",
-    "scikit-image>=0.22",
-    "scipy>=1.11",
     "pyyaml>=6.0",
     "tqdm>=4.66",
     "pillow>=10.0",
@@ -26,7 +24,7 @@ dependencies = [
 models = ["ultralytics>=8.3.237"]
 roboflow = ["roboflow>=1.1.50", "python-dotenv>=1.0"]
 app = ["streamlit>=1.35"]
-dev = ["pytest>=8.0", "ruff>=0.5"]
+dev = ["pytest>=8.0", "ruff>=0.5", "scipy>=1.11", "scikit-image>=0.22"]  # reference checks
 all = ["picklabel[models,roboflow,app,dev]"]
 
 [project.scripts]

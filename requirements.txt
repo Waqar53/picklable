@@ -1,7 +1,6 @@
 # Same as `pip install -e ".[all]"`; handy on Colab / Kaggle.
 numpy>=1.26
 opencv-python>=4.9
-scikit-image>=0.22
 scipy>=1.11
 pyyaml>=6.0
 tqdm>=4.66

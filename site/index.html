@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PickLabel: every robot pick is a free training label</title>
+<meta name="description" content="Before/after pick frames + the grasp point become scored instance masks, routed into Roboflow, and a fast student that drops into ROS 2 in place of sam3_ros. Live demo runs the real Python pipeline in your browser.">
+<meta property="og:title" content="PickLabel: every robot pick is a free training label">
+<meta property="og:description" content="Auto-labelling for waste-sorting robots. Live in-browser demo of the real pipeline.">
+<meta property="og:image" content="assets/pick_accept.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f7b5f'/%3E%3Cpath d='M9 17l5 5 9-11' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap row">
+    <a class="brand" href="#"><span class="logo" aria-hidden="true"></span>PickLabel</a>
+    <nav>
+      <a href="#demo">Live demo</a>
+      <a href="#results">Results</a>
+      <a href="#how">How it works</a>
+      <a href="#grip">Grip's stack</a>
+      <a class="btn" href="https://github.com/Waqar53/picklable">Code on GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero wrap">
+  <p class="eyebrow">Perception data engine for waste-sorting robots</p>
+  <h1>Every robot pick is a free training label.</h1>
+  <p class="lede">PickLabel turns a pick's before/after frames, grasp point and gripper feedback into a scored
+    instance mask. It routes the mask into Roboflow as ground truth, review or a hard example, then trains a fast
+    YOLO-seg student that drops into ROS 2 in place of <code>sam3_ros</code>.</p>
+  <div class="kpis">
+    <div class="kpi"><b>0</b><span>human-labelled instances for the same recall @ P≥0.90 as a student trained on 352 (0.877 vs 0.863)</span></div>
+    <div class="kpi"><b>0.94</b><span>mean IoU of auto-labels vs exact masks, 131 picks</span></div>
+    <div class="kpi"><b>4 / 4</b><span>missed grasps caught and routed as hard examples</span></div>
+    <div class="kpi"><b>0.61→0.93</b><span>mean IoU gained from white-balance gains + shift tolerance</span></div>
+  </div>
+  <p class="fine">Measured on synthetic trays with exact ground truth: a correctness test bench, not a claim about real
+    waste. Real-data numbers are next (<a href="https://github.com/Waqar53/picklable/blob/main/report/results.md">report</a>).</p>
+</section>
+
+<section id="demo" class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Live demo</h2>
+      <p>The real <code>picklabel</code> Python package, running in your browser through Pyodide (WebAssembly) and
+        OpenCV. No server. Pick an example, then <strong>click anywhere on the before frame</strong> to move the grasp point.</p>
+    </div>
+    <div id="status" class="status" role="status"><span class="dot"></span><span id="status-text">Showing precomputed results while Python loads (about 10–20 s, first visit only)…</span></div>
+
+    <div class="demo">
+      <aside class="picker" aria-label="Examples">
+        <h3>Example picks</h3>
+        <div id="thumbs" class="thumbs"></div>
+        <h3>Your own pair</h3>
+        <label class="file">Before frame<input id="up-before" type="file" accept="image/*"></label>
+        <label class="file">After frame<input id="up-after" type="file" accept="image/*"></label>
+        <p class="fine">Same camera, one item removed between the two shots. Nothing is uploaded: it all stays in your browser.</p>
+      </aside>
+
+      <div class="stage">
+        <div class="panels">
+          <figure class="panel clickable">
+            <div class="frame" id="before-frame">
+              <img id="img-before" alt="Before frame">
+              <span id="marker" class="marker" hidden></span>
+            </div>
+            <figcaption><b>Before</b> + grasp point <em>(click to move it)</em></figcaption>
+          </figure>
+          <figure class="panel"><div class="frame"><img id="img-after" alt="After frame, aligned onto the before frame"><div class="busy"></div></div>
+            <figcaption><b>After</b>, aligned onto the before frame</figcaption></figure>
+          <figure class="panel"><div class="frame"><img id="img-change" alt="Change map"><div class="busy"></div></div>
+            <figcaption><b>Change map</b>, white outline = change at the grasp</figcaption></figure>
+          <figure class="panel"><div class="frame"><img id="img-result" alt="Resulting mask"><div class="busy"></div></div>
+            <figcaption><b>Mask</b>, coloured by route</figcaption></figure>
+        </div>
+
+        <div class="verdict" id="verdict">
+          <div class="v-main">
+            <span id="route" class="route">…</span>
+            <div class="v-stats">
+              <div><small>Quality score</small><b id="score">–</b></div>
+              <div><small>IoU vs ground truth</small><b id="iou">–</b></div>
+              <div><small>Mask source</small><b id="source">–</b></div>
+              <div><small>Ran in</small><b id="ms">–</b></div>
+            </div>
+          </div>
+          <p id="route-explain" class="route-explain"></p>
+          <div id="reasons" class="chips"></div>
+        </div>
+
+        <div class="cols">
+          <div class="card">
+            <h3>Score signals</h3>
+            <div id="signals" class="signals"></div>
+            <p class="fine" id="align-info"></p>
+          </div>
+          <div class="card">
+            <h3>What would be sent to Roboflow</h3>
+            <pre id="payload" class="code">…</pre>
+            <p class="fine">Exact keyword arguments for <code>Project.single_upload</code>. Review routes go up as
+              predictions and stay out of the dataset until a human approves them.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="results" class="wrap">
+  <div class="section-head">
+    <h2>Results so far</h2>
+    <p>All measured with the code in the repo on synthetic trays with exact masks. They show correctness and what each
+      design choice is worth. Real-data rows stay empty until the home-rig gold set exists.</p>
+  </div>
+  <div class="callout">
+    <b>Headline:</b> a student trained on PickLabel labels with <b>zero</b> human-labelled instances matched a student
+    trained on 352 ground-truth masks at recall @ precision 0.90 (<b>0.877</b> vs <b>0.863</b>; the gap is one item
+    out of 73). It is weaker on mask tightness (AP50-95 0.714 vs 0.771).
+  </div>
+  <div class="figs">
+    <figure><img src="assets/headline_synthetic.png" alt="Recall at precision 0.90 vs human-labelled training instances" loading="lazy"><figcaption>Student recall vs human labels</figcaption></figure>
+    <figure><img src="assets/pr_synthetic.png" alt="Precision-recall curves of both students" loading="lazy"><figcaption>Precision–recall, held-out sessions</figcaption></figure>
+  </div>
+
+  <div class="tables">
+    <div class="card">
+      <h3>What each design choice is worth</h3>
+      <table>
+        <thead><tr><th>Variant</th><th>mean IoU</th><th>IoU ≥ 0.75</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td>full pipeline</td><td>0.925</td><td>89%</td></tr>
+          <tr><td>no exposure / white-balance gains</td><td>0.825</td><td>70%</td></tr>
+          <tr><td>no shift tolerance</td><td>0.793</td><td>68%</td></tr>
+          <tr><td>neither</td><td>0.607</td><td>39%</td></tr>
+          <tr><td>no GrabCut edge snapping</td><td>0.780</td><td>76%</td></tr>
+        </tbody>
+      </table>
+      <p class="fine">37 picks, one change at a time (<code>scripts/ablate_autolabel.py</code>).</p>
+    </div>
+    <div class="card">
+      <h3>Mask source and routing</h3>
+      <table>
+        <thead><tr><th>Mask source</th><th>mean IoU</th><th>score↔IoU ρ</th></tr></thead>
+        <tbody>
+          <tr><td>change map + GrabCut (no model)</td><td>0.925</td><td>0.57</td></tr>
+          <tr><td>SAM 2.1-tiny at the grasp</td><td>0.903</td><td>0.78</td></tr>
+        </tbody>
+      </table>
+      <p class="fine">With SAM 2.1 the calibrated cutoffs accept 33 labels at mean IoU 0.925 and send the 3 worst
+        (mean IoU 0.65) to review. Belt mode: 25/25 frames aligned from the encoder shift; accepted labels at IoU 0.95.</p>
+    </div>
+  </div>
+  <figure class="wide"><img src="assets/calibration.png" alt="Quality score vs true IoU with calibrated cutoffs" loading="lazy"><figcaption>Routing cutoffs fitted on gold data, not guessed</figcaption></figure>
+</section>
+
+<section id="how" class="band">
+  <div class="wrap">
+    <div class="section-head"><h2>How it works</h2></div>
+    <ol class="steps">
+      <li><b>Align</b><span>ECC with an ORB fallback for a fixed scene; on a belt, the encoder shift is the prior and phase correlation refines it.</span></li>
+      <li><b>Change map</b><span>Per-channel gains undo white-balance drift; colour and texture differences take the minimum over small shifts, so nudged neighbours don't count.</span></li>
+      <li><b>Mask at the grasp</b><span>SAM 3 text candidates, else SAM 2.1 prompted with the grasp, the change box and background clicks, else GrabCut.</span></li>
+      <li><b>Score and route</b><span>Agreement, change support, contrast and shape give a quality score. Cutoffs are fitted on gold data. Gripper feedback overrides the pixels.</span></li>
+      <li><b>Train and deploy</b><span>Labels are propagated across the session; the split is by session; the YOLO-seg student is judged on recall @ P≥0.90 and ships as a <code>sam3_ros</code> drop-in.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section id="grip" class="wrap">
+  <div class="section-head">
+    <h2>Built against Grip's public stack</h2>
+    <p>From Grip Robotics' public forks (commit references in <a href="https://github.com/Waqar53/picklable/blob/main/docs/grip_stack.md">docs/grip_stack.md</a>). Anything about private code is inference.</p>
+  </div>
+  <div class="card">
+    <table class="map">
+      <thead><tr><th>What the forks show</th><th>What PickLabel does with it</th></tr></thead>
+      <tbody>
+        <tr><td><code>sam3_ros</code> publishes real SAM 3 confidence (Grip's commit); fixed 0.75 threshold; one pass per prompt</td><td>SAM 3 baseline run exactly as that node runs it: prompt × threshold sweep, recall @ P≥0.90, duplicate detections across prompts counted</td></tr>
+        <tr><td><code>sam3_ros</code> interface: lifecycle node, <code>Detection2DArray</code>, <code>DetectMaskArray</code></td><td><code>picklabel_ros</code> with the same parameters, topics and fields; <code>node_name:=sam3_node</code> makes it a literal drop-in</td></tr>
+        <tr><td>ZED with exposure fixed; auto white balance still on</td><td>Per-channel gain correction before differencing</td></tr>
+        <tr><td>ServoJ belt tracking; cuRobo trajectories that start and end in motion</td><td>Belt alignment from the encoder shift; the pick logger records it per pick</td></tr>
+        <tr><td>Impedance gripper with feedback</td><td>"Gripper empty" picks become hard examples; "empty but the scene changed" is never auto-accepted</td></tr>
+        <tr><td>ZED custom YOLO ONNX path</td><td><code>picklabel export --kind zed</code> writes the ONNX and the exact config block</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="fine">Not yet tested: a real ZED, a Fairino arm, plant data, and the ROS 2 node on a real ROS install (it runs in tests against fake <code>rclpy</code>). SAM 3 weights are gated.</p>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap row">
+    <span>Built by <b>Mohd Waqar Azim</b></span>
+    <nav>
+      <a href="https://github.com/Waqar53/picklable">Code (MIT)</a>
+      <a href="https://github.com/Waqar53/picklable/blob/main/report/results.md">One-page report</a>
+      <a href="https://github.com/Waqar53">GitHub</a>
+      <a href="https://www.linkedin.com/in/mohd-waqar-azim-07b944281">LinkedIn</a>
+    </nav>
+  </div>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

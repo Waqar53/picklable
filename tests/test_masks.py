@@ -46,6 +46,22 @@ def test_bbox_iou_and_matrix():
     assert m[0, 1] == 1.0 and m[1, 0] == 1.0 and m[0, 0] == 0.0
 
 
+def test_opencv_fill_holes_and_hysteresis_match_scipy_and_skimage():
+    import pytest
+
+    ndimage = pytest.importorskip("scipy.ndimage")
+    filters = pytest.importorskip("skimage.filters")
+    from picklabel.masks import fill_holes, hysteresis
+
+    rng = np.random.default_rng(0)
+    for _ in range(20):
+        noise = cv2.GaussianBlur(rng.random((90, 120)).astype(np.float32), (0, 0), 2.5)
+        score = (noise - noise.min()) / np.ptp(noise)
+        m = score > 0.55
+        assert np.array_equal(fill_holes(m), ndimage.binary_fill_holes(m))
+        assert np.array_equal(hysteresis(score, 0.45, 0.7), filters.apply_hysteresis_threshold(score, 0.45, 0.7))
+
+
 def test_mask_nms_drops_duplicates_keeps_best():
     a = disk_mask(100, 100, (50, 50), 20)
     a2 = disk_mask(100, 100, (51, 50), 20)

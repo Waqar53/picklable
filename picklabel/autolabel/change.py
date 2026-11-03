@@ -27,9 +27,8 @@ from dataclasses import dataclass, field
 
 import cv2
 import numpy as np
-from skimage.filters import apply_hysteresis_threshold
 
-from picklabel.masks import clean_mask, erode
+from picklabel.masks import clean_mask, erode, hysteresis
 
 
 @dataclass
@@ -142,7 +141,7 @@ def compute_change(before: np.ndarray, after_aligned: np.ndarray, valid: np.ndar
     score = cv2.GaussianBlur(score.astype(np.float32), (0, 0), 1.0)
     score[~v] = 0.0
 
-    mask = apply_hysteresis_threshold(score, cfg.low, cfg.high) & v
+    mask = hysteresis(score, cfg.low, cfg.high) & v
     min_area = max(1, int(cfg.min_area_frac * score.size))
     mask = clean_mask(mask, cfg.open_px, cfg.close_px, min_area, fill=True) & v
 

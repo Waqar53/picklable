@@ -6,6 +6,9 @@ routes the mask into Roboflow as ground truth, as a prediction for review, or as
 It then trains a fast YOLO-seg student on those labels (SAM 3 acts as the teacher once its
 weights are available), and the student drops into a ROS 2 stack in place of `sam3_ros`.
 
+**Live demo: [picklabel.vercel.app](https://picklabel.vercel.app)**. The real pipeline runs in your browser
+(Pyodide + OpenCV, nothing to install). Click any item on a tray and watch it decide.
+
 ![Five picks: before + grasp, after (aligned), change map, routed mask](docs/img/picklabel.gif)
 
 *Each pick: the item removed at the grasp point is found from the before/after difference,
@@ -138,9 +141,10 @@ git clone https://github.com/Waqar53/picklable.git && cd picklable
 python -m venv ~/.venvs/picklabel && source ~/.venvs/picklabel/bin/activate   # outside iCloud-synced folders
 pip install -e ".[all]"
 
-make test                      # 32 tests, ~15 s, no weights needed
+make test                      # 33 tests, ~15 s, no weights needed
 make demo                      # auto-label the bundled example picks
 make app                       # Streamlit demo (also deployable as a Hugging Face Space)
+python scripts/build_site.py --out build/site   # the live demo page; deploy: vercel deploy build/site --prod
 ```
 
 **Your own picks** (phone above a tray, focus and exposure locked):
@@ -190,6 +194,7 @@ picklabel/eval/        metrics, SAM 3 baseline, student eval, calibration, failu
 picklabel/deploy/      3D pick point from mask + depth, ONNX / ZED export
 picklabel/data/        synthetic sessions, capture rig, dataset downloads
 ros2_ws/               picklabel_ros: detector (sam3_ros drop-in), pick logger, replay; Dockerfile
+site/                  live demo page: the same Python running in the browser (Pyodide), on Vercel
 app/                   Streamlit demo        notebooks/  GPU notebook        docs/  stack notes, labelling guide
 ```
 

@@ -1,4 +1,7 @@
-"""Binary-mask utilities: IoU, boxes, COCO RLE, polygons, NMS, morphology."""
+"""Binary-mask utilities: IoU, boxes, COCO RLE, polygons, NMS, morphology.
+
+Only NumPy and OpenCV, so the auto-labeler also runs in the browser (Pyodide).
+"""
 
 from __future__ import annotations
 
@@ -6,7 +9,6 @@ from collections.abc import Sequence
 
 import cv2
 import numpy as np
-from scipy import ndimage
 
 
 def mask_bbox(mask: np.ndarray) -> tuple[int, int, int, int] | None:
@@ -129,7 +131,21 @@ def erode(mask: np.ndarray, radius: int) -> np.ndarray:
 
 
 def fill_holes(mask: np.ndarray) -> np.ndarray:
-    return ndimage.binary_fill_holes(mask)
+    """Same result as ``scipy.ndimage.binary_fill_holes``: background not 4-connected to the border is a hole."""
+    background = np.pad((~mask.astype(bool)).astype(np.uint8), 1, constant_values=1)
+    flood = np.zeros((background.shape[0] + 2, background.shape[1] + 2), np.uint8)
+    cv2.floodFill(background, flood, (0, 0), 0, flags=4)
+    return mask.astype(bool) | background[1:-1, 1:-1].astype(bool)
+
+
+def hysteresis(score: np.ndarray, low: float, high: float) -> np.ndarray:
+    """Same result as ``skimage.filters.apply_hysteresis_threshold``: 4-connected regions above ``low``
+    that contain a pixel above ``high``."""
+    n, labels = cv2.connectedComponents((score > low).astype(np.uint8), connectivity=4)
+    keep = np.zeros(n, bool)
+    keep[np.unique(labels[score > high])] = True
+    keep[0] = False
+    return keep[labels]
 
 
 def remove_small(mask: np.ndarray, min_area: int) -> np.ndarray:
