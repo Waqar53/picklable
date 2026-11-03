@@ -1,0 +1,241 @@
+{
+  "autolabel": {
+    "n_picks": 131,
+    "n_negative_frames": 30,
+    "routes": {
+      "accept": 123,
+      "review": 2,
+      "hard": 6
+    },
+    "label_yield": 0.9542,
+    "sources": {
+      "change": 127,
+      "none": 4
+    },
+    "mean_quality": 0.8415,
+    "elapsed_s": 208.1,
+    "ms_per_pick_median": {
+      "align": 86.7,
+      "change": 341.1,
+      "grabcut": 161.1,
+      "total": 625.5
+    },
+    "gold": {
+      "n": 131,
+      "mean_iou_labelled": 0.9355,
+      "by_route": {
+        "accept": {
+          "n": 123,
+          "mean_iou": 0.9379,
+          "iou>=0.75": 0.9268
+        },
+        "review": {
+          "n": 2,
+          "mean_iou": 0.7833,
+          "iou>=0.75": 0.5
+        },
+        "hard": {
+          "n": 2,
+          "mean_iou": 0.5034,
+          "iou>=0.75": 0.5
+        }
+      },
+      "missed_picks_caught": "4/4",
+      "frame_instance_recall": 0.926,
+      "frame_instance_precision": 0.9615,
+      "frames_complete": 0.8855
+    },
+    "models": {
+      "text_segmenter": null,
+      "point_segmenter": null
+    }
+  },
+  "R1_dataset": {
+    "runs": [
+      "runs/synthetic_e2e/gt_run"
+    ],
+    "routes": [
+      "accept"
+    ],
+    "allow_incomplete": false,
+    "images": {
+      "train": 130,
+      "val": 31
+    },
+    "instances": {
+      "train": 290,
+      "val": 62
+    },
+    "skipped": {},
+    "sessions": {
+      "tray000": "train",
+      "tray001": "train",
+      "tray002": "val",
+      "tray003": "train",
+      "tray004": "val",
+      "tray005": "train",
+      "tray006": "train",
+      "tray007": "train",
+      "tray008": "train",
+      "tray009": "train",
+      "tray010": "val",
+      "tray011": "val",
+      "tray012": "train",
+      "tray013": "train",
+      "tray014": "train",
+      "tray015": "train",
+      "tray016": "train",
+      "tray017": "train",
+      "tray018": "train",
+      "tray019": "train",
+      "tray020": "train",
+      "tray021": "val",
+      "tray022": "train",
+      "tray023": "train",
+      "tray024": "train",
+      "tray025": "train",
+      "tray026": "val",
+      "tray027": "train",
+      "tray028": "train",
+      "tray029": "train"
+    },
+    "seed": 0
+  },
+  "R2_dataset": {
+    "runs": [
+      "runs/synthetic_e2e/autolabel"
+    ],
+    "routes": [
+      "accept"
+    ],
+    "allow_incomplete": false,
+    "images": {
+      "train": 116,
+      "val": 23
+    },
+    "instances": {
+      "train": 242,
+      "val": 39
+    },
+    "skipped": {
+      "incomplete": 15,
+      "route": 7
+    },
+    "sessions": {
+      "tray000": "train",
+      "tray001": "train",
+      "tray002": "val",
+      "tray003": "train",
+      "tray004": "val",
+      "tray005": "train",
+      "tray006": "train",
+      "tray007": "train",
+      "tray008": "train",
+      "tray009": "train",
+      "tray010": "val",
+      "tray011": "val",
+      "tray012": "train",
+      "tray013": "train",
+      "tray014": "train",
+      "tray015": "train",
+      "tray016": "train",
+      "tray017": "train",
+      "tray018": "train",
+      "tray019": "train",
+      "tray020": "train",
+      "tray021": "val",
+      "tray022": "train",
+      "tray023": "train",
+      "tray024": "train",
+      "tray025": "train",
+      "tray026": "val",
+      "tray027": "train",
+      "tray028": "train",
+      "tray029": "train"
+    },
+    "seed": 0
+  },
+  "eval": {
+    "R1": {
+      "n_images": 32,
+      "n_gt": 73,
+      "n_pred": 138,
+      "ap50": 0.9157,
+      "ap50_95": 0.7713,
+      "recall_at_p90": 0.863,
+      "thr_at_p90": 0.5317,
+      "best_f1": 0.8859,
+      "thr_best_f1": 0.3712,
+      "at_threshold": {
+        "threshold": 0.5317,
+        "precision": 0.9,
+        "recall": 0.863,
+        "false_positives": 7,
+        "duplicates": 1
+      },
+      "by_size": {
+        "medium": {
+          "n": 36,
+          "recall": 0.8333
+        },
+        "large": {
+          "n": 37,
+          "recall": 0.8919
+        }
+      },
+      "latency_cpu": {
+        "device": "cpu",
+        "imgsz": 640,
+        "half": false,
+        "n": 20,
+        "ms_mean": 58.92,
+        "ms_p50": 58.25,
+        "ms_p90": 61.65,
+        "fps": 17.0
+      }
+    },
+    "R2": {
+      "n_images": 32,
+      "n_gt": 73,
+      "n_pred": 128,
+      "ap50": 0.9122,
+      "ap50_95": 0.7143,
+      "recall_at_p90": 0.8767,
+      "thr_at_p90": 0.5128,
+      "best_f1": 0.8921,
+      "thr_best_f1": 0.6155,
+      "at_threshold": {
+        "threshold": 0.5128,
+        "precision": 0.9014,
+        "recall": 0.8767,
+        "false_positives": 7,
+        "duplicates": 0
+      },
+      "by_size": {
+        "medium": {
+          "n": 36,
+          "recall": 0.8056
+        },
+        "large": {
+          "n": 37,
+          "recall": 0.9459
+        }
+      },
+      "latency_cpu": {
+        "device": "cpu",
+        "imgsz": 640,
+        "half": false,
+        "n": 20,
+        "ms_mean": 60.67,
+        "ms_p50": 60.58,
+        "ms_p90": 63.3,
+        "fps": 16.5
+      }
+    }
+  },
+  "human_labelled_instances": {
+    "R1": 352,
+    "R2": 0
+  },
+  "elapsed_min": 19.3
+}

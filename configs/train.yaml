@@ -1,0 +1,45 @@
+# Training presets (picklabel train --preset R2 ...). Any key is an Ultralytics train() argument.
+# imgsz 1024 keeps small film fragments visible; drop to 640 on a CPU or a small GPU.
+
+R1:
+  description: manual labels only (upper reference)
+  model: yolo11s-seg.pt
+  epochs: 100
+  imgsz: 1024
+  batch: 8
+R2:
+  description: PickLabel accepted labels only
+  model: yolo11s-seg.pt
+  epochs: 100
+  imgsz: 1024
+  batch: 8
+R3:
+  description: PickLabel accepted + reviewed
+  model: yolo11s-seg.pt
+  epochs: 100
+  imgsz: 1024
+  batch: 8
+R4:
+  description: R3 + ZeroWaste-f plastic (build the dataset with --extra-coco)
+  model: yolo11s-seg.pt
+  epochs: 100
+  imgsz: 1024
+  batch: 8
+R5n:
+  description: R3 data, nano model
+  model: yolo11n-seg.pt
+  epochs: 100
+  imgsz: 1024
+  batch: 16
+R5m:
+  description: R3 data, medium model
+  model: yolo11m-seg.pt
+  epochs: 100
+  imgsz: 1024
+  batch: 4
+smoke:
+  description: minutes-long CPU/MPS run to check the loop end to end (not a real result)
+  model: yolo11n-seg.pt
+  epochs: 30
+  imgsz: 640
+  batch: 8

@@ -1,0 +1,53 @@
+# Starting point for a ZED over a moving belt (pick_logger_node frames). Same keys as autolabel.yaml;
+# only what differs from the tray defaults is commented.
+#   picklabel autolabel /data/picks --out runs/autolabel/belt --config configs/autolabel_zed_belt.yaml --sam2 sam2.1_b.pt
+
+align:
+  mode: belt                # content translates with the conveyor; the encoder shift is the prior
+  motion: affine
+  work_max_side: 960
+  max_translation_frac: 0.4 # belt moves far more between frames than a shaking tray camera
+  belt_roi: null            # [x1, y1, x2, y2] of the belt surface in the rectified left image; set it once
+                            # so static frame parts (rails, guards) don't pull the shift estimate to zero
+  belt_search_px: 24        # max correction applied to the encoder shift
+
+change:
+  work_max_side: 1280       # HD1080 frames: keep fragments above a few pixels
+  color_scale: 18.0
+  texture_scale: 0.5
+  w_color: 0.65
+  w_texture: 0.35
+  shift_px: 8               # wet organics settle more on a vibrating belt than on a tray
+  shift_step: 4
+  texture_sigma: 2.5
+  normalize_color: true     # ZED runs auto white balance even with exposure fixed
+  blur_sigma: 1.5
+  low: 0.22
+  high: 0.40
+  open_px: 3
+  close_px: 9
+  min_area_frac: 0.0001
+
+segment:
+  prompts: ["plastic bag", "plastic film", "plastic wrapper"]
+  sam3_conf: 0.25
+  grasp_radius_frac: 0.012
+  region_max_dist_frac: 0.03
+  n_negative_points: 4
+  grabcut: true
+
+score:
+  accept: 0.70              # refit with picklabel eval-autolabel on a gold set from this cell
+  review: 0.40
+  support_ref: 0.5
+  core_thr: 0.40
+  min_area_frac: 0.0001
+  max_area_frac: 0.25
+  weights: {agreement: 0.25, core: 0.20, support: 0.15, contrast: 0.15, shape: 0.10, source: 0.15}
+  source_prior: {sam3: 1.0, sam2: 0.85, change: 0.6}
+
+propagate:
+  enabled: false            # belt frames are not a sequence of one scene
+  change_thr: 0.25
+  min_visible_frac: 0.6
+  min_boundary_frac: 0.6

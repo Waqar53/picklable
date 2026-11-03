@@ -1,0 +1,16 @@
+{
+  "pick_id": "002",
+  "session": "tray-example",
+  "grasp_px": [
+    464.43,
+    305.51
+  ],
+  "class_name": "plastic",
+  "grasp_success": null,
+  "belt_shift_px": null,
+  "timestamp": 2.0,
+  "synthetic": true,
+  "missed": false,
+  "film": false,
+  "dark": false
+}

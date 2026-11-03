@@ -1,0 +1,15 @@
+# Same as `pip install -e ".[all]"`; handy on Colab / Kaggle.
+numpy>=1.26
+opencv-python>=4.9
+scikit-image>=0.22
+scipy>=1.11
+pyyaml>=6.0
+tqdm>=4.66
+pillow>=10.0
+matplotlib>=3.8
+ultralytics>=8.3.237
+roboflow>=1.1.50
+python-dotenv>=1.0
+streamlit>=1.35
+pytest>=8.0
+ruff>=0.5

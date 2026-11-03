@@ -1,0 +1,15 @@
+{
+  "pick_id": "001b",
+  "session": "tray-example",
+  "grasp_px": [
+    464.43,
+    305.51
+  ],
+  "class_name": "plastic",
+  "grasp_success": false,
+  "belt_shift_px": null,
+  "timestamp": 1.5,
+  "synthetic": true,
+  "missed": true,
+  "note": "gripper missed; retried as pick 002"
+}

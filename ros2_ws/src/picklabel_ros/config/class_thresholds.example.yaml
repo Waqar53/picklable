@@ -1,0 +1,6 @@
+# Per-class thresholds from `picklabel thresholds` (lowest threshold with precision >= 0.90 per class).
+# Pass them to the node as a string array:
+#   ros2 param set /sam3_node class_thresholds "['plastic=0.45', 'film=0.38']"
+picklabel_node:
+  ros__parameters:
+    class_thresholds: ["plastic=0.45"]

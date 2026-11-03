@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets
+.env
+
+# Data, weights and run outputs (commit the scripts, not the data)
+data/raw/
+data/pairs/
+data/home/
+data/synth/
+datasets/
+runs/
+*.pt
+*.onnx
+*.engine
+*.npz
+!tests/fixtures/*.npz
+
+# ROS 2 build products
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Generated failure crops (large); figures and JSON reports are committed
+report/failures/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+
+# local weights for the demo app / ROS node
+weights/
+build/
+.claude/launch.json

@@ -1,0 +1,34 @@
+{
+  "n": 37,
+  "mean_iou": 0.9246,
+  "by_route": {
+    "accept": {
+      "n": 37,
+      "mean_iou": 0.9246,
+      "iou>=0.75": 0.8919
+    }
+  },
+  "by_source": {
+    "change": {
+      "n": 37,
+      "mean_iou": 0.9246,
+      "iou>=0.75": 0.8919
+    }
+  },
+  "spearman_score_vs_iou": 0.5708,
+  "recommended": {
+    "accept_cutoff": 0.706,
+    "review_cutoff": 0.706,
+    "accepted": {
+      "n": 36,
+      "mean_iou": 0.9385
+    },
+    "reviewed": {
+      "n": 0,
+      "mean_iou": null
+    },
+    "hard": {
+      "n": 1
+    }
+  }
+}

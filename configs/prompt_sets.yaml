@@ -1,0 +1,6 @@
+# SAM 3 text-prompt sets for `picklabel sam3-baseline`. Every unique prompt runs once per image
+# (cached); each set is then scored from the cache, with and without cross-prompt NMS.
+A: ["plastic"]
+B: ["plastic bag", "plastic film"]
+C: ["plastic bag", "plastic film", "plastic wrapper", "transparent plastic"]
+D: ["plastic bag", "plastic film", "plastic wrapper", "transparent plastic", "chip packet", "cling film"]

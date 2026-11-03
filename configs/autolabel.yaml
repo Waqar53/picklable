@@ -1,0 +1,51 @@
+# PickLabel auto-labeler defaults. Tune on ~20 pairs, then freeze and calibrate
+# the routing cutoffs on the gold set with `picklabel eval-autolabel`.
+
+align:
+  mode: static          # static: tray / fixed scene with camera shake. belt: content moves with the conveyor
+  motion: affine        # translation | euclidean | affine | homography (static mode)
+  work_max_side: 960    # alignment runs on a downscaled copy
+  max_translation_frac: 0.2
+  belt_roi: null        # [x1, y1, x2, y2] in pixels; restricts belt-shift estimation to the belt
+  belt_search_px: 24    # refine a known belt shift (from robot tracking) by at most this much
+
+change:
+  work_max_side: 1024
+  color_scale: 18.0     # CIE76 delta-E that counts as a full-strength colour change
+  texture_scale: 0.5    # relative local-contrast change that counts as full strength
+  w_color: 0.65
+  w_texture: 0.35
+  shift_px: 6           # neighbours nudged by the pick (up to this many px) do not count as change
+  shift_step: 3
+  texture_sigma: 2.5
+  normalize_color: true # per-channel gains undo exposure / white-balance drift (the ZED still runs auto WB)
+  blur_sigma: 1.5
+  low: 0.22             # hysteresis thresholds on the combined change score
+  high: 0.40
+  open_px: 3
+  close_px: 9
+  min_area_frac: 0.0002
+
+segment:
+  prompts: ["plastic bag", "plastic film", "plastic wrapper"]   # SAM 3 text prompts (when sam3 weights are given)
+  sam3_conf: 0.25
+  grasp_radius_frac: 0.012   # grasp may land this close to the item edge (fraction of the image's long side)
+  region_max_dist_frac: 0.03 # nearest change component accepted if the grasp is outside all of them
+  n_negative_points: 4       # unchanged pixels around the item, given to SAM as background clicks
+  grabcut: true              # refine change-only masks to image edges when no model mask is chosen
+
+score:
+  accept: 0.70
+  review: 0.40
+  support_ref: 0.5
+  core_thr: 0.40            # change score counted as "strong"; core = share of the mask above it
+  min_area_frac: 0.0002
+  max_area_frac: 0.25
+  weights: {agreement: 0.25, core: 0.20, support: 0.15, contrast: 0.15, shape: 0.10, source: 0.15}
+  source_prior: {sam3: 1.0, sam2: 0.85, change: 0.6}
+
+propagate:
+  enabled: true             # copy later picks' masks back into earlier frames (static scenes only)
+  change_thr: 0.25          # per-pixel change score that counts as "changed" between two frames
+  min_visible_frac: 0.6     # share of the later item's mask that must look unchanged
+  min_boundary_frac: 0.6    # share of its rim that must look unchanged (a shifted item fails this)
